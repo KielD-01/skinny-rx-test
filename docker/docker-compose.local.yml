@@ -1,0 +1,64 @@
+version: "3.8"
+
+volumes:
+  skinny-rx-redis-data:
+    name: skinny-rx-redis-data
+  skinny-rx-caddy-config:
+    name: skinny-rx-caddy-config
+  skinny-rx-caddy-data:
+    name: skinny-rx-caddy-data
+
+networks:
+  skinny-rx-network:
+    name: skinny-rx-network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: ${DOCKER_SUBNET:-22.0.1.0/24}
+
+services:
+  skinny-rx-php:
+    container_name: skinny-rx-php
+    image: devilbox/php-fpm:8.2-work
+    expose:
+      - 9000
+    volumes:
+      - ../app:/var/www/app
+    working_dir: /var/www/app
+    networks:
+      - skinny-rx-network
+    depends_on:
+      - skinny-rx-redis
+    deploy:
+      resources:
+        limits:
+          memory: 4096m
+
+  skinny-rx-caddy:
+    container_name: skinny-rx-caddy
+    image: caddy/caddy:2.8.0-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - skinny-rx-caddy-config:/config
+      - skinny-rx-caddy-data:/data
+      - ./local/caddy/:/etc/caddy/
+      - ../app:/var/www/app
+    networks:
+      - skinny-rx-network
+    depends_on:
+      - skinny-rx-php
+
+  skinny-rx-redis:
+    container_name: skinny-rx-redis
+    image: bitnami/redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - skinny-rx-redis-data:/bitnami/redis/data
+    networks:
+      - skinny-rx-network
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes # Only for Local usage

@@ -1,0 +1,6 @@
+skinny-rx.local {
+    root * /var/www/app/public
+    encode zstd gzip
+    php_fastcgi skinny-rx-php:9000
+    file_server
+}
