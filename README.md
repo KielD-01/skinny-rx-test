@@ -93,4 +93,4 @@ To run tests You have to execute:
 docker exec -u 1000 -it skinny-rx-php /bin/bash -c "php artisan test"
 ```
 After an execution You should see the results:  
-![Tests Results](storage/docs/img/img.png)
+![Tests Results](app/storage/docs/img/test-results.png)
